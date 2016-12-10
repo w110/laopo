@@ -1,0 +1,380 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<title>媳妇儿大人的日程</title>
+<link rel="stylesheet" type="text/css" href="renxi/fullcalendar.css">
+<link rel="stylesheet" type="text/css" href="modal/component.css" />
+<script src='renxi/jquery.min.js'></script>
+<script src='renxi/fullcalendar.min.js'></script>
+<script src="modal/modernizr.custom.js"></script>
+<style type="text/css">
+#calendar{width:960px;height:1080px; margin:20px auto 10px auto}
+</style>
+<script type="text/javascript">
+/**
+ * 处理触摸事件
+ * 
+ */
+var startX = 0, startY = 0,hand = 1; 		
+//touchstart事件  
+function touchSatrtFunc(evt) {  
+        var touch = evt.touches[0]; //获取第一个触点  
+        var x = Number(touch.pageX); //页面触点X坐标  
+        var y = Number(touch.pageY); //页面触点Y坐标  
+        startX = x;  
+        startY = y;  
+}  
+//touchend事件  
+function touchEndFunc(evt) { 
+	var touch = evt.changedTouches[0];
+	var x = Number(touch.pageX); //页面触点X坐标  
+    var y = Number(touch.pageY); //页面触点Y坐标 
+	if(Math.abs(startY-y)<100){
+		if(x-startX>200){
+			if(hand == 1){
+				hand = 0;
+				setTimeout(function(){$('#calendar').fullCalendar('prev');hand = 1;},50);
+			}
+		}
+		if(x-startX<-200){
+			if(hand == 1){
+				hand = 0;
+				setTimeout(function(){$('#calendar').fullCalendar('next');hand = 1;},50
+					);
+			}
+		}
+	}
+}  
+//绑定事件  
+function bindEvent() {  
+    document.addEventListener('touchstart', touchSatrtFunc, false);  
+    document.addEventListener('touchend', touchEndFunc, false);  
+}   
+/**
+* 日期的格式化
+* 
+*/
+Date.prototype.format = function(format){ 
+	var o = { 
+	"M+" : this.getMonth()+1, //month 
+	"d+" : this.getDate(), //day 
+	"h+" : this.getHours(), //hour 
+	"m+" : this.getMinutes(), //minute 
+	"s+" : this.getSeconds(), //second 
+	"q+" : Math.floor((this.getMonth()+3)/3), //quarter 
+	"S" : this.getMilliseconds() //millisecond 
+	} 
+	if(/(y+)/.test(format)) { 
+	format = format.replace(RegExp.$1, (this.getFullYear()+"").substr(4 - RegExp.$1.length)); 
+	} 
+	for(var k in o) { 
+	if(new RegExp("("+ k +")").test(format)) { 
+	format = format.replace(RegExp.$1, RegExp.$1.length==1 ? o[k] : ("00"+ o[k]).substr((""+ o[k]).length)); 
+	} 
+	} 
+	return format; 
+ } 
+/**
+* 定义锚点和当前的日期
+* 
+*/
+var targetdate = new Date();
+targetdate.setFullYear(2016, 9, 26); 
+targetdate.setHours(0);
+targetdate.setMinutes(0);
+targetdate.setSeconds(0);	
+targetdate.setMilliseconds(0);
+var nowdate = new Date();
+nowdate.setHours(0);
+nowdate.setMinutes(0);
+nowdate.setSeconds(0);	
+nowdate.setMilliseconds(0);
+/**
+ *  计算两个日期的距离
+ * 
+ */
+  function caluateDes(date1,date2){
+  	var time = date2.getTime() - date1.getTime() ; 
+  	return Math.floor(time/(24*60*60*1000))
+  }
+  /**
+   * 日期加减
+   * @param {date} date 
+   * @param {int} num  
+   */
+  function addDate(date,num){
+	  var a = date;
+	  a = a.valueOf();
+	  a = a + num * 24 * 60 * 60 * 1000;
+	  a = new Date(a);
+	  return a;
+  }
+  /**
+   * 计算出当前日期下是处于什么样的班
+   * @param  {date} date 你要计算的日期
+   * @return {int}       处于的班
+   */
+  function caluateWhat(date){
+  	var dates = caluateDes(targetdate,date)	
+  	return dates%5+1;
+  }
+  var data = [];//定义初始化参数
+  var Runds = [[],
+	[
+		{title:'中班哦-上午',start:' 08:00',end:' 11:30',color:'green',allDay:false},
+		{title:'中班哦-下午',start:' 14:30',end:' 17:30',color:'gray',allDay:false},
+	],
+  	[
+  		{title:'下午班哦~',start:' 12:00',end:' 19:00',color:'black',allDay:false},
+  	],
+  	[
+  		{title:'上午班哦~',start:' 08:00',end:' 12:00',color:'green',allDay:false},
+  		{title:'夜班哦~',start:' 19:00',end:' 08:00',color:'red',allDay:false},
+  	],
+  	[
+  		{title:'那个...',start:' 19:00',end:' 08:00',color:'pink',allDay:true},
+  	],
+  ];
+  var fromdate = targetdate;//从什么时候开始计算呢
+  var toWhatdate = addDate(nowdate,365);//到多少天呢
+  for(;fromdate<toWhatdate;){
+  	var day = caluateWhat(fromdate);
+  	switch(day){
+  		case 1:
+  		var dstr = fromdate.format('yyyy-MM-dd');
+  		var obj = new Object();
+  		obj.title = Runds[day][0].title;
+		obj.start = dstr+Runds[day][0].start;
+		obj.end = dstr+Runds[day][0].end;
+		obj.color = Runds[day][0].color;
+		obj.allDay = Runds[day][0].allDay;
+		data.push(obj);
+		var obj2 = new Object();
+		obj2.title = Runds[day][1].title;
+		obj2.start = dstr+Runds[day][1].start;
+		obj2.end = dstr+Runds[day][1].end;
+		obj2.color = Runds[day][1].color;
+		obj2.allDay = Runds[day][1].allDay;
+		data.push(obj2);
+		fromdate = addDate(fromdate,1)
+  		break;
+  		case 2:
+  		var dstr = fromdate.format('yyyy-MM-dd');
+  		var obj = new Object();
+  		obj.title = Runds[day][0].title;
+		obj.start = dstr+Runds[day][0].start;
+		obj.end = dstr+Runds[day][0].end;
+		obj.color = Runds[day][0].color;
+		obj.allDay = Runds[day][0].allDay;
+		data.push(obj);
+		fromdate = addDate(fromdate,1)
+  		break;
+  		case 3:
+  		var obj1 = new Object();
+  		obj1.title = Runds[day][0].title;
+		obj1.start = fromdate.format('yyyy-MM-dd')+Runds[day][0].start;
+		obj1.end = fromdate.format('yyyy-MM-dd')+Runds[day][0].end;
+		obj1.color = Runds[day][0].color;
+		obj1.allDay = Runds[day][0].allDay;
+		data.push(obj1);
+		var obj = new Object();
+  		obj.title = Runds[day][1].title;
+		obj.start = fromdate.format('yyyy-MM-dd')+Runds[day][1].start;
+		fromdate = addDate(fromdate,1)
+		obj.end = fromdate.format('yyyy-MM-dd')+Runds[day][1].end;
+		obj.color = Runds[day][1].color;
+		obj.allDay = Runds[day][1].allDay;
+		data.push(obj);
+		fromdate = addDate(fromdate,2)
+  		break;
+  	}
+  }
+ /**
+ * 计算分钟
+ * 
+ */
+  function getmin(str){
+  	strs = str.split(':');
+  	return parseInt(strs[0])*60+parseInt(strs[1]);
+  }
+  var nowclassMsg = [[],
+	[
+		{startmsg:'距离上午的中班开始还有',endmsg:'上午的中班结束还有',start:getmin(' 08:00'),end:getmin(' 11:30'),color:'green'},
+		{startmsg:'距离下午的中班开始还有',endmsg:'下午的中班结束还有',start:getmin(' 14:30'),end:getmin(' 17:30'),color:'gray'},
+		{msg:'休息时间哦',color:'pink'},
+	],
+  	[
+  		{startmsg:'距离下午班开始还有',endmsg:'距离下午班结束还有',start:getmin(' 12:00'),end:getmin(' 19:00'),color:'black'},
+  		{msg:'休息时间哦',color:'pink'},
+  	],
+  	[
+  		{startmsg:'距离上午班开始还有',endmsg:'距离上午班结束还有',start:getmin(' 08:00'),end:getmin(' 12:00'),color:'green'},
+  		{startmsg:'距离夜班开始还有',endmsg:'距离夜班结束还有',start:getmin(' 19:00'),end:getmin(' 24:00'),color:'red'},
+  	],
+  	[
+  		{startmsg:'距离夜班开始还有',endmsg:'距离夜班结束还有',start:getmin(' 00:00'),end:getmin(' 08:00'),color:'red'},
+  		{msg:'休息时间哦',color:'pink'},
+  	],
+  	[
+  		{msg:'休息时间哦',color:'pink'},
+  	],
+  ];
+ /**
+ * 获得当前的消息
+ * 
+ */
+  function splstr(){
+  	var nowtimmin = getmin((new Date()).format('hh:mm'));
+  	var getnowclass = caluateWhat(nowdate);//计算当前处在什么班
+  	var statu = nowclassMsg[getnowclass];
+  	obj = new Object();
+  	obj.color = statu[0].color;
+  	switch(getnowclass){
+  		case 1:
+  			if(nowtimmin<statu[0].start){
+          var h = parseInt((statu[0].start-nowtimmin)/60),m = (statu[0].start-nowtimmin)%60;
+  				obj.msg = statu[0].startmsg+(h==0?'':(h+'小时'))+(m==0?'':(m+'分钟'));
+  			}else if(nowtimmin>=statu[0].start && nowtimmin<statu[0].end){
+          var h = parseInt((statu[0].end-nowtimmin)/60),m = (statu[0].end-nowtimmin)%60;
+  				obj.msg = statu[0].endmsg+(h==0?'':(h+'小时'))+(m==0?'':(m+'分钟'));
+  			}else if(nowtimmin>=statu[0].end && nowtimmin<statu[1].start){
+          var h = parseInt((statu[1].start-nowtimmin)/60),m = (statu[1].start-nowtimmin)%60;
+  				obj.msg = statu[1].startmsg+(h==0?'':(h+'小时'))+(m==0?'':(m+'分钟'));
+  				obj.color = statu[1].color;
+  			}else if(nowtimmin>=statu[1].start && nowtimmin<statu[1].end){
+          var h = parseInt((statu[1].end-nowtimmin)/60),m = (statu[1].end-nowtimmin)%60;
+  				obj.msg = statu[1].endmsg+(h==0?'':(h+'小时'))+(m==0?'':(m+'分钟'));
+  				obj.color = statu[1].color;
+  			}else{
+  				obj.msg = statu[2].msg;
+  				obj.color = statu[2].color;
+  			}
+  		break;
+  		case 2:
+  			if(nowtimmin<statu[0].start){
+          var h = parseInt((statu[0].start-nowtimmin)/60),m = (statu[0].start-nowtimmin)%60;
+  				obj.msg = statu[0].startmsg+(h==0?'':(h+'小时'))+(m==0?'':(m+'分钟'));
+  			}else if(nowtimmin>=statu[0].start && nowtimmin<statu[0].end){
+          var h = parseInt((statu[0].end-nowtimmin)/60),m = (statu[0].end-nowtimmin)%60;
+  				obj.msg = statu[0].endmsg+(h==0?'':(h+'小时'))+(m==0?'':(m+'分钟'));;
+  			}else{
+  				obj.msg = statu[1].msg;
+  				obj.color = statu[1].color;
+  			}
+  		break;
+  		case 3:
+  			if(nowtimmin<statu[0].start){
+          var h = parseInt((statu[0].start-nowtimmin)/60),m = (statu[0].start-nowtimmin)%60;
+  				obj.msg = statu[0].startmsg+(h==0?'':(h+'小时'))+(m==0?'':(m+'分钟'));
+  			}else if(nowtimmin>=statu[0].start && nowtimmin<statu[0].end){
+          var h = parseInt((statu[0].end-nowtimmin)/60),m = (statu[0].end-nowtimmin)%60;
+  				obj.msg = statu[0].endmsg+(h==0?'':(h+'小时'))+(m==0?'':(m+'分钟'));
+  			}else if(nowtimmin>=statu[0].end && nowtimmin<statu[1].start){
+          var h = parseInt((statu[1].start-nowtimmin)/60),m = (statu[1].start-nowtimmin)%60;
+  				obj.msg = statu[1].startmsg+(h==0?'':(h+'小时'))+(m==0?'':(m+'分钟'));
+  				obj.color = statu[1].color;
+  			}else if(nowtimmin>=statu[1].start && nowtimmin<=statu[1].end){
+          var h = parseInt((statu[1].end-nowtimmin+getmin(' 08:00'))/60),m = (statu[1].end-nowtimmin+getmin(' 08:00'))%60;
+  				obj.msg = statu[1].endmsg+(h==0?'':(h+'小时'))+(m==0?'':(m+'分钟'));
+  				obj.color = statu[1].color;
+  			}else{
+  			}
+  		break;
+  		case 4:
+  			if(nowtimmin<statu[0].end){
+          var h = parseInt((statu[0].end-nowtimmin)/60),m = (statu[0].end-nowtimmin)%60;
+  				obj.msg = statu[0].endmsg+(h==0?'':(h+'小时'))+(m==0?'':(m+'分钟'));
+  			}else{
+  				obj.msg = statu[1].msg;
+  				obj.color = statu[1].color;
+  			}
+  		break;
+  		case 5:
+  			obj.msg = statu[0].msg;
+  		break;
+  	}
+  	if(obj.msg!=''){
+  		obj.show = true;
+  	}else{
+  		obj.show = false;
+  	}
+  	return obj;
+  }
+var msgObj = splstr();
+targetdate.setFullYear(2016, 10, 23); //2016-11-23开始大姨妈	
+fromdate = targetdate;
+for(;fromdate<toWhatdate;){
+	var obj = new Object();
+  	obj.title = Runds[4][0].title;
+	obj.start = fromdate.format('yyyy-MM-dd')+Runds[4][0].start;
+	fromdate = addDate(fromdate,5)
+	obj.end = fromdate.format('yyyy-MM-dd')+Runds[4][0].end;
+	obj.color = Runds[4][0].color;
+	obj.allDay = Runds[4][0].allDay;
+	data.push(obj);
+	fromdate = addDate(fromdate,23)
+}		
+$(function() {
+	$('#calendar').fullCalendar({
+		header: {
+			left: 'prev,next today',
+			center: 'title',
+			right: 'month,agendaWeek,agendaDay'
+		},
+		events: data,
+		aspectRatio: 0.7,
+		defaultView:'agendaWeek',
+	});
+	bindEvent();
+});
+</script>
+</head>
+<body style="font-size: large;" id = 'p'>
+<div id="main" style="width:100%;height:200%">
+   <div id='calendar'></div>
+</div>
+ <div class="md-modal"  id="modelmsg">
+	<div class="md-content">
+		<h3 id = 'warn'></h3>
+	</div>
+</div>
+<button style = 'display: none;' class="md-trigger" data-modal="modelmsg">Newspaper</button>
+<div class="md-overlay" style = 'background: gray;opacity: 0.6;'></div>
+<script src="modal/classie.js"></script>
+<script src="modal/modalEffects.js"></script>
+<script>
+	if(msgObj.show){
+		var rdnum =parseInt(Math.random()*8);
+		switch(rdnum){
+			case 0:
+			case 1:
+				rdnum = 4;
+			break;
+			case 2:
+				rdnum = 13;
+			break;
+			case 3:
+				rdnum = 7;
+			break;
+			case 4:
+				rdnum = 6;
+			break;
+			case 5:
+				rdnum = 11;
+			break;
+			case 6:
+				rdnum = 14;
+			break;
+			case 7:
+				rdnum = 15;
+			break;
+		}
+		$('#modelmsg').addClass('md-effect-'+rdnum);
+		$('#warn').html(msgObj.msg);
+		$('#modelmsg').find('.md-content').css({'background':msgObj.color});
+		setTimeout(function(){$(".md-trigger").click()},1000);
+	}	
+</script>
+</body>
+</html>
