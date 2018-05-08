@@ -168,8 +168,8 @@
 
             ctx.moveTo(0, 0);
             ctx.scale(0.75, 0.75);
-            ctx.font = "12px 微软雅黑,Verdana"; // 字号肿么没有用? (ˉ(∞)ˉ)
-            ctx.fillText("喻杰点这里", 23, 10);
+            ctx.font = "24px 微软雅黑,Verdana"; // 字号肿么没有用? (ˉ(∞)ˉ)
+            ctx.fillText("春江花月夜", 23, 10);
             ctx.restore();
         },
         clear: function() {
